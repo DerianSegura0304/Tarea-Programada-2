@@ -79,4 +79,14 @@ def menu():
 
 #Programa Principal
 bdDonadores = funciones.cargarDonadores()
+hospitales = {"1":{"San José":["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"]},
+              "2":{"Alajuela":["Hospital San Rafael de Alajuela","Hospital de San Ramón","Hospital del Cantón Norteño"]},
+              "3":{"Cartago":["Hospital Max Peralta"]},
+              "4":{"Heredia":["Hospital San Vicente de Paúl"]},
+              "5":{"Guanacaste":["Hospital La Anexión en Nicoya","Hospital Enrique Baltodano de Liberia"]},
+              "6":{"Puntarenas":["Hospital Monseñor Sanabria"]},
+              "7":{"Limón":["Hospital Tony Facio","Hospital de Guápiles"]}}
+tSangres = {1:"O+", 2:"O-", 3:"A+",4:"A-", 5:"B+", 6:"B-", 7:"AB+", 8:"AB-"}
+justificaciones = {0:"N/A",1:"Enfermedades Infecciosas/Crónicas", 3:"Conductas de Riesgo",4:"Factores de Salud Física",
+                   5:"Procedimientos Médicos",6:"Uso de medicamentos",7:"Situaciones Específicas"}
 menu()
