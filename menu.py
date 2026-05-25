@@ -8,17 +8,11 @@ import funciones
 import tkinter as tk
 
 #Menu
-def menu():
+def menu(bdDonadores):
     ventanaMenu = tk.Tk()
     ventanaMenu.title("Sistema de Banco de Sangre")
 
-    anchoPantalla = ventanaMenu.winfo_screenwidth()
-    altoPantalla = ventanaMenu.winfo_screenheight()
-    anchoVentana = 800
-    altoVentana = 600
-    posicionX = round((anchoPantalla / 2) - (anchoVentana / 2))
-    posicionY = round((altoPantalla / 2) - (altoVentana / 2))
-    ventanaMenu.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+    anchoVentana, altoVentana, posicionX, posicionY = funciones.dimensionarVentana(ventanaMenu)
 
     mensajeMenu = tk.Label(text="Estas en el Menu Principal. Presione el Boton de la Opcion que Desea",
                            font=("Arial", 12))
@@ -29,7 +23,7 @@ def menu():
                                    text="Ingresar Donante",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY))
+                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones))
     opcIngresarDonante.place(x=100, y=100)
 
     opcGenerarDonadores = tk.Button(ventanaMenu,
@@ -41,7 +35,7 @@ def menu():
 
     opcActualizarDatosDonador = tk.Button(ventanaMenu,
                                           cursor="Hand2",
-                                          text="Actualizar Dtos del Donador",
+                                          text="Actualizar Datos del Donador",
                                           relief="groove",
                                           font=("Arial", 11))
     opcActualizarDatosDonador.place(x=100, y=200)
@@ -50,7 +44,8 @@ def menu():
                                    cursor="Hand2",
                                    text="Eliminar Donador",
                                    relief="groove",
-                                   font=("Arial", 11))
+                                   font=("Arial", 11),
+                                   command=lambda: funciones.eliminarDonadorAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores))
     opcEliminarDonador.place(x=100, y=250)
 
     opcLugarDonacion = tk.Button(ventanaMenu,
@@ -73,20 +68,22 @@ def menu():
                          relief="groove",
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
+    
+    def actualizarBotones():
+        if len(bdDonadores) == 0:
+            opcActualizarDatosDonador.config(state = "disable")
+            opcEliminarDonador.config(state = "disable")
+            opcReportes.config(state = "disable")
+        else:
+            opcActualizarDatosDonador.config(state = "normal")
+            opcEliminarDonador.config(state = "normal")
+            opcReportes.config(state = "normal")
+    actualizarBotones()
 
     ventanaMenu.mainloop()
 
 
 #Programa Principal
 bdDonadores = funciones.cargarDonadores()
-hospitales = {"1":{"San José":["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"]},
-              "2":{"Alajuela":["Hospital San Rafael de Alajuela","Hospital de San Ramón","Hospital del Cantón Norteño"]},
-              "3":{"Cartago":["Hospital Max Peralta"]},
-              "4":{"Heredia":["Hospital San Vicente de Paúl"]},
-              "5":{"Guanacaste":["Hospital La Anexión en Nicoya","Hospital Enrique Baltodano de Liberia"]},
-              "6":{"Puntarenas":["Hospital Monseñor Sanabria"]},
-              "7":{"Limón":["Hospital Tony Facio","Hospital de Guápiles"]}}
-tSangres = {1:"O+", 2:"O-", 3:"A+",4:"A-", 5:"B+", 6:"B-", 7:"AB+", 8:"AB-"}
-justificaciones = {0:"N/A",1:"Enfermedades Infecciosas/Crónicas", 3:"Conductas de Riesgo",4:"Factores de Salud Física",
-                   5:"Procedimientos Médicos",6:"Uso de medicamentos",7:"Situaciones Específicas"}
-menu()
+print(bdDonadores)
+menu(bdDonadores)
