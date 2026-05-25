@@ -52,8 +52,8 @@ def mostrarInformacionSangre(tipoSangreInt):
                       8: "AB+: Se les recomienda hacer donaciones de plaquetas y de plasma."}
     infoSangreDonador = infoTipoSangre[tipoSangreInt]
     return infoSangreDonador
-                    #ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, fechaNacStr, ventanaMenu
-def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu):
+    
+def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu, actualizarBotones):
     ventanaIngresarDon.withdraw()
     ventanaResultadoRegistarDon = tk.Toplevel()
     ventanaResultadoRegistarDon.title("Sistema de Banco de Sangre")
@@ -117,6 +117,7 @@ def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, p
                     mensLugarDonacion.place(x=98, y=250)
 
                 bdDonadores[cedulaStr] = [nombreLista, tipoSangreInt, sexoBool, fechaNacTupla, pesoFloat, correoStr, telefonoStr, 1, 0]
+                actualizarBotones()
                 print(bdDonadores)
 
             
@@ -136,12 +137,125 @@ def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, p
                                 font=("Arial", 12))
         mensFechaResultado.place(x=98, y=70)
 
+
+
+def eliminarDonadorAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores):
+    ventanaMenu.withdraw()
+    ventanaEliminarDonador = tk.Toplevel()
+    ventanaEliminarDonador.title("Sistema de Banco de Sangre")
+    ventanaEliminarDonador.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+    mensCedula = tk.Label(ventanaEliminarDonador,
+                          text="Digite su cedula de la siguiente manera: Ej: 1-2345-6789: ")
+    mensCedula.place(x=98, y=70)
+    mensCedulaValidacion = tk.Label(ventanaEliminarDonador, 
+                            text="", 
+                            font=("Arial", 10))
+    mensCedulaValidacion.place(x=265, y=90)
+    cedula = ingresarCedula(ventanaEliminarDonador, mensCedulaValidacion)
+    
+
+    botBuscarCedula = tk.Button(ventanaEliminarDonador,
+                                   cursor="Hand2",
+                                   text="Buscar Cedula",
+                                   relief="groove",
+                                   font=("Arial", 11),
+                                   command=lambda: buscarCedulaEliminar(cedula, bdDonadores, ventanaEliminarDonador, botBuscarCedula))
+    botBuscarCedula.place(x=270, y=500)
+
+    botRegresar = tk.Button(ventanaEliminarDonador,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: volverMenu(ventanaEliminarDonador, ventanaMenu))
+    botRegresar.place(x=410, y=500)
+
+
+def definirJustificacion(justificacionStr):
+    diccJustificaciones = {"Enfermedades Infecciosas/Crónicas": 1 ,
+                           "Conductas de Riesgo": 2,
+                           "Factores de Salud Física": 3,
+                           "Procedimientos Médicos": 4,
+                           "Uso de Medicamentos": 5,
+                           "Estilo de Vida y Viajes": 6,
+                           "Situaciones Específicas": 7}
+    numJustificacion = diccJustificaciones[justificacionStr]
+    return numJustificacion
+
+
+def buscarCedulaEliminar(cedula, bdDonadores, ventanaEliminarDonador, botEliminarDonador):
+    cedulaStr = cedula.get()
+    cedulaValidada = validarExistenciaCedula(cedulaStr, bdDonadores)
+    if cedulaValidada != 1:
+        if cedulaValidada !=2:
+            mensCedulaEncontrada = tk.Label(ventanaEliminarDonador,
+                                text="Se encontro la cedula en el sistema\nSeleccione la justificacion de la eliminacion",
+                                justify="left")
+            mensCedulaEncontrada.place(x=98, y=120)
+            comboBoxJustificacion = Combobox(ventanaEliminarDonador)
+            comboBoxJustificacion['values'] = ("Enfermedades Infecciosas/Crónicas","Conductas de Riesgo","Factores de Salud Física","Procedimientos Médicos","Uso de Medicamentos","Estilo de Vida y Viajes","Situaciones Específicas")
+            comboBoxJustificacion.place(x=98, y=160)
+
+
+            botEliminarDonador.config(text="Confirmar Borrado",
+                                      command=lambda: confirmarEliminacion(cedulaStr, comboBoxJustificacion, bdDonadores, ventanaEliminarDonador))
+        else:
+            messagebox.showerror("Cedula inexistente", f"La persona con el número de cédula: {cedulaStr}\nno está registrado en la base de datos del Banco de Sangre aún.")
+            return
+    else:
+        messagebox.showerror("Cedula Invalida", "Verifique que esta escrita de la siguiente manera: Ej: 1-2345-6789.")
+        return
+    
+
+def confirmarEliminacion(cedulaStr, comboBoxJustificacion, bdDonadores, ventanaEliminarDonador):
+    justificacionSeleccionada = comboBoxJustificacion.get()
+    if justificacionSeleccionada == "":
+        messagebox.showerror("Faltan Datos", "No puede dejar datos en blanco")
+        return
+            
+    respuesta = messagebox.askokcancel("Confirmar Acción", "¿Está seguro de que desea realizar esta acción?")
+    if respuesta:  
+        bdDonadores = eliminarDonador(cedulaStr, bdDonadores)
+        mensCedula = tk.Label(ventanaEliminarDonador,
+                        text="Donador eliminado satisfactoriamente")
+        mensCedula.place(x=98, y=186)
+        numJustificacion = definirJustificacion(justificacionSeleccionada)
+        bdDonadores = asignarJustificacion(cedulaStr, bdDonadores, numJustificacion)
+        print(bdDonadores)
+        return bdDonadores
+    else:
+        mensCedula = tk.Label(ventanaEliminarDonador,
+                                text="Donador NO eliminado")
+        mensCedula.place(x=98, y=186)
+
+
+def asignarJustificacion(cedulaStr, bdDonadores, numJustificacion):
+    datos = bdDonadores[cedulaStr]
+    datos[-1] = numJustificacion
+    bdDonadores[cedulaStr] = datos
+    return bdDonadores
+
+def eliminarDonador(cedulaStr, bdDonadores):
+    datos = bdDonadores[cedulaStr]
+    datos[-2] = 0
+    bdDonadores[cedulaStr] = datos
+    return bdDonadores
+
+def validarExistenciaCedula(cedulaStr, bdDonadores):
+    while True:
+        if not validarCedulaBD(cedulaStr):
+            return 1
+        if cedulaStr not in bdDonadores:
+            return 2
+        print("Cedula existente.")
+        return cedulaStr
+
 def formatoFechaNacIngresarDon(fechaNac):
     if not re.match("^\\d{2}/\\d{2}/\\d{4}$", fechaNac):
         return False
     return True
 
-def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu):
+def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu, actualizarBotones):
     cedulaStr = cedula.get()
     nombreStr = nombre.get()
     tipoSangreStr = tipoSangre.get()
@@ -169,7 +283,7 @@ def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX
             if formatoFechaNacIngresarDon(fechaNacStr):
                 if validarTelBD(telefonoStr):
                     if validarCorreoBD(correoStr):
-                        return registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu)
+                        return registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu, actualizarBotones)
                     else:
                         messagebox.showerror("Correo Invalido", "Verifique que este escrito como se solicita.")
                         return
@@ -416,7 +530,7 @@ def limpiarEntradas(cedula, nombre, fechaNac, comboBoxTipoSangre, sexoDonador, p
 def volverMenu(ventanaActual, ventanaMenu):
     ventanaActual.destroy()
     ventanaMenu.deiconify()
-def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores):
+def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones):
     ventanaMenu.withdraw()
     ventanaIngresarDon = tk.Toplevel()
     ventanaIngresarDon.title("Sistema de Banco de Sangre")
@@ -503,7 +617,7 @@ def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY
                                    text="Registrar",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu))
+                                   command=lambda: registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu, actualizarBotones))
     botRegistrar.place(x=280, y=500)
     botLimpiar = tk.Button(ventanaIngresarDon,
                                    cursor="Hand2",

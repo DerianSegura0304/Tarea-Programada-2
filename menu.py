@@ -23,7 +23,7 @@ def menu(bdDonadores):
                                    text="Ingresar Donante",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores))
+                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones))
     opcIngresarDonante.place(x=100, y=100)
 
     opcGenerarDonadores = tk.Button(ventanaMenu,
@@ -44,7 +44,8 @@ def menu(bdDonadores):
                                    cursor="Hand2",
                                    text="Eliminar Donador",
                                    relief="groove",
-                                   font=("Arial", 11))
+                                   font=("Arial", 11),
+                                   command=lambda: funciones.eliminarDonadorAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores))
     opcEliminarDonador.place(x=100, y=250)
 
     opcLugarDonacion = tk.Button(ventanaMenu,
@@ -67,15 +68,17 @@ def menu(bdDonadores):
                          relief="groove",
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
-
-    if len(bdDonadores) == 0:
-        opcActualizarDatosDonador.config(state = "disable")
-        opcEliminarDonador.config(state = "disable")
-        opcReportes.config(state = "disable")
-    else:
-        opcActualizarDatosDonador.config(state = "normal")
-        opcEliminarDonador.config(state = "normal")
-        opcReportes.config(state = "normal")
+    
+    def actualizarBotones():
+        if len(bdDonadores) == 0:
+            opcActualizarDatosDonador.config(state = "disable")
+            opcEliminarDonador.config(state = "disable")
+            opcReportes.config(state = "disable")
+        else:
+            opcActualizarDatosDonador.config(state = "normal")
+            opcEliminarDonador.config(state = "normal")
+            opcReportes.config(state = "normal")
+    actualizarBotones()
 
     ventanaMenu.mainloop()
 
