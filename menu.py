@@ -8,17 +8,11 @@ import funciones
 import tkinter as tk
 
 #Menu
-def menu():
+def menu(bdDonadores):
     ventanaMenu = tk.Tk()
     ventanaMenu.title("Sistema de Banco de Sangre")
 
-    anchoPantalla = ventanaMenu.winfo_screenwidth()
-    altoPantalla = ventanaMenu.winfo_screenheight()
-    anchoVentana = 800
-    altoVentana = 600
-    posicionX = round((anchoPantalla / 2) - (anchoVentana / 2))
-    posicionY = round((altoPantalla / 2) - (altoVentana / 2))
-    ventanaMenu.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+    anchoVentana, altoVentana, posicionX, posicionY = funciones.dimensionarVentana(ventanaMenu)
 
     mensajeMenu = tk.Label(text="Estas en el Menu Principal. Presione el Boton de la Opcion que Desea",
                            font=("Arial", 12))
@@ -29,7 +23,7 @@ def menu():
                                    text="Ingresar Donante",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY))
+                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores))
     opcIngresarDonante.place(x=100, y=100)
 
     opcGenerarDonadores = tk.Button(ventanaMenu,
@@ -41,7 +35,7 @@ def menu():
 
     opcActualizarDatosDonador = tk.Button(ventanaMenu,
                                           cursor="Hand2",
-                                          text="Actualizar Dtos del Donador",
+                                          text="Actualizar Datos del Donador",
                                           relief="groove",
                                           font=("Arial", 11))
     opcActualizarDatosDonador.place(x=100, y=200)
@@ -74,9 +68,19 @@ def menu():
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
 
+    if len(bdDonadores) == 0:
+        opcActualizarDatosDonador.config(state = "disable")
+        opcEliminarDonador.config(state = "disable")
+        opcReportes.config(state = "disable")
+    else:
+        opcActualizarDatosDonador.config(state = "normal")
+        opcEliminarDonador.config(state = "normal")
+        opcReportes.config(state = "normal")
+
     ventanaMenu.mainloop()
 
 
 #Programa Principal
 bdDonadores = funciones.cargarDonadores()
-menu()
+print(bdDonadores)
+menu(bdDonadores)
