@@ -1,6 +1,6 @@
 #Elaborado por: Derian Segura y Juan Gonzalez
 #Fecha de creacion: 16/05/2026 19:00
-#Ultima modificacion: 
+#Ultima modificacion:
 #Version 3.14.3
 
 #importaciones
@@ -30,7 +30,8 @@ def menu(bdDonadores):
                                     cursor="Hand2",
                                     text="Generar Donadores",
                                     relief="groove",
-                                    font=("Arial", 11))
+                                    font=("Arial", 11),
+                                    command=lambda: funciones.generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana,posicionX, posicionY, bdDonadores,actualizarBotones))
     opcGenerarDonadores.place(x=100, y=150)
 
     opcActualizarDatosDonador = tk.Button(ventanaMenu,
@@ -68,7 +69,7 @@ def menu(bdDonadores):
                          relief="groove",
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
-    
+
     def actualizarBotones():
         if len(bdDonadores) == 0:
             opcActualizarDatosDonador.config(state = "disable")
@@ -85,5 +86,4 @@ def menu(bdDonadores):
 
 #Programa Principal
 bdDonadores = funciones.cargarDonadores()
-print(bdDonadores)
 menu(bdDonadores)

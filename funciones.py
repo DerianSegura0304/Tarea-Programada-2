@@ -6,6 +6,7 @@
 #importaciones
 import re
 import pickle
+import random
 import tkinter as tk
 from tkinter.ttk import *
 from datetime import datetime
@@ -332,7 +333,7 @@ def ingresarCedula(ventanaIngresarDon, mensCedulaValidacion):
     return cedulaDonador
 def validarCedulaBD(pCedula):
     if isinstance(pCedula, str):
-        if re.match("^[1-7]{1}-\\d{4}-\\d{4}$", pCedula):
+        if re.match("^[1-9]{1}-\\d{4}-\\d{4}$", pCedula):
             return True
     return False
 def validarCedulaAux(cedula, mensCedulaValidacion):
@@ -413,7 +414,7 @@ def validarFechaNacBD(pFechaNac):
                     estado = validarEdad(fechaNacInt)
             if estado:
                 return True
-        return False
+    return False
 def validarPesoBD(pPeso):
     if isinstance(pPeso, float):
         if pPeso > 50 and pPeso < 120:
@@ -471,15 +472,15 @@ def validarBD(bdDonadores):
     if isinstance(bdDonadores, list):
         validos = 0
         invalidos = 0
-        temp = []
+        temp = {}
         for donador in bdDonadores:
             if isinstance(donador, list) and len(donador) == 10:
                 if validarNombreCompletoBD(donador[0]) and validarCedulaBD(donador[1]) and validarTSangreBD(donador[2]) and validarSexoBD(donador[3]) and validarFechaNacBD(donador[4]):
                     if validarPesoBD(donador[5]) and validarCorreoBD(donador[6]) and validarTelBD(donador[7]) and validarEstadoBD(donador[8]) and validarJustificacionBD(donador[9]):
                         fecha = donador[4]
                         fecha = (f"{fecha[0]}",f"{fecha[1]}",f"{fecha[2]}")
-                        datos = [donador[0],donador[1],donador[2],donador[3],fecha,donador[5],donador[6],donador[7],donador[8],donador[9]]
-                        temp.append(datos)
+                        datos = [donador[0],donador[2],donador[3],fecha,donador[5],donador[6],donador[7],donador[8],donador[9]]
+                        temp[donador[1]] = datos
                         validos += 1
                     else:
                         invalidos += 1
@@ -507,8 +508,18 @@ def cargarDonadores():
         return {}
 #Guardar base de datos
 def guardarDonadores(bdDonadores):
+    llaves = list(bdDonadores.keys())
+    matriz = []
+    for cedula in llaves:
+        datos = bdDonadores[cedula]
+        temp = []
+        for i in range(len(datos)):
+            temp.append(datos[i])
+        temp.insert(1,cedula)
+        matriz.append(temp)
+    print(matriz)
     with open("bdDonadores.txt", "wb") as f:
-        pickle.dump(bdDonadores, f)
+        pickle.dump(matriz, f)
         print("Base de datos guardada")
         # print(bdDonadores)
     return
@@ -645,3 +656,234 @@ def ingresarPeso(ventanaIngresarDon):
                          font=("Arial", 11))
     pesoDonador.place(x=100, y=352)
     return pesoDonador
+
+#Generar Donadores
+def revisarCedulaRep(cedula, bdPersonas):
+    if cedula in bdPersonas:
+        return True
+    return False
+def generarCedula(cedula, bdPersonas):
+    estado = True
+    while estado:
+        provincia = str(random.randint(1, 9))
+        tomo = str(random.randint(1000, 9999))
+        asiento = str(random.randint(1000, 9999))
+        cedula = provincia + "-" + tomo + "-" + asiento
+        estado = revisarCedulaRep(cedula, bdPersonas)
+    return cedula
+def generarNombre():
+    nombres = [
+        "Aaron", "Abigail", "Adam", "Adrian", "Aiden", "Alex", "Alice", "Amanda", "Andrew", "Ashley",
+        "Barbara", "Benjamin", "Bethany", "Blake", "Brandon", "Brian", "Brianna", "Brittany", "Brooke", "Bryan",
+        "Caleb", "Cameron", "Carl", "Caroline", "Carter", "Charles", "Charlotte", "Chloe", "Christian", "Christopher",
+        "Dakota", "Daniel", "Danielle", "David", "Deborah", "Dennis", "Derek", "Diana", "Dominic", "Donna",
+        "Edward", "Eleanor", "Elijah", "Elizabeth", "Ella", "Emily", "Emma", "Eric", "Ethan", "Evelyn",
+        "Faith", "Felicia", "Fernando", "Finn", "Fiona", "Francis", "Frank", "Fred", "Freya", "Floyd",
+        "Gabriel", "Gavin", "George", "Georgia", "Gianna", "Grace", "Graham", "Grant", "Gregory", "Gwen",
+        "Hailey", "Hannah", "Harold", "Harry", "Hazel", "Heather", "Helen", "Henry", "Holly", "Hunter",
+        "Ian", "Irene", "Isaac", "Isabel", "Isabella", "Ivan", "Ivy", "Iris", "India", "Imogen",
+        "Jack", "Jackson", "Jacob", "Jade", "James", "Jamie", "Jane", "Jasmine", "Jason", "Julia",
+        "Karen", "Katherine", "Kayla", "Keith", "Kelly", "Kenneth", "Kevin", "Kimberly", "Kyle", "Kylie",
+        "Larry", "Laura", "Lauren", "Layla", "Leah", "Leo", "Liam", "Lillian", "Logan", "Lucas",
+        "Madeline", "Madison", "Marcus", "Margaret", "Maria", "Mark", "Mason", "Matthew", "Megan", "Michael",
+        "Nancy", "Naomi", "Natalie", "Nathan", "Nicholas", "Nicole", "Noah", "Nolan", "Nora", "Norman",
+        "Oakley", "Olivia", "Omar", "Ophelia", "Oscar", "Owen", "Olive", "Octavia", "Orlando", "Otis",
+        "Paige", "Pamela", "Patricia", "Patrick", "Paul", "Penelope", "Peter", "Philip", "Phoebe", "Preston",
+        "Quentin", "Quincy", "Quinn", "Queenie", "Quinlan", "Quinton", "Quade", "Quilla", "Quora", "Quest",
+        "Rachel", "Raymond", "Rebecca", "Richard", "Robert", "Rose", "Ruby", "Russell", "Ryan", "Ryder",
+        "Samantha", "Samuel", "Sandra", "Sarah", "Scott", "Sean", "Sebastian", "Sophia", "Steven", "Sydney",
+        "Taylor", "Teresa", "Thomas", "Tiffany", "Timothy", "Travis", "Trevor", "Trinity", "Tyler", "Tyrone",
+        "Ula", "Ulric", "Ulysses", "Uma", "Uriel", "Ursula", "Usher", "Urban", "Unity", "Ulani",
+        "Valerie", "Vanessa", "Victor", "Victoria", "Vincent", "Violet", "Virginia", "Vivian", "Vladimir", "Vance",
+        "Walter", "Wayne", "Wendy", "Wesley", "Whitney", "William", "Willow", "Wyatt", "Warren", "Wanda",
+        "Xander", "Xavier", "Xena", "Ximena", "Xiomara", "Xyla", "Xanthe", "Xerxes", "Xenia", "Xavi",
+        "Yara", "Yasmine", "Yolanda", "Yosef", "Yvette", "Yvonne", "Yahir", "Yasmin", "Yuri", "Yvette",
+        "Zachary", "Zane", "Zara", "Zayden", "Zelda", "Zoe", "Zoey", "Zuri", "Zion", "Zeke"]
+    apellidos = [
+        "Adams", "Alexander", "Allen", "Anderson", "Armstrong", "Arnold", "Austin", "Atkins", "Avery", "Abbott",
+        "Bailey", "Baker", "Barnes", "Bell", "Bennett", "Brooks", "Brown", "Bryant", "Butler", "Burton",
+        "Campbell", "Carter", "Chapman", "Clark", "Coleman", "Collins", "Cook", "Cooper", "Cox", "Crawford",
+        "Daniels", "Davidson", "Davis", "Dawson", "Dean", "Diaz", "Dixon", "Douglas", "Duncan", "Dunn",
+        "Edwards", "Ellis", "Elliott", "Evans", "Erickson", "Estrada", "English", "Eaton", "Emerson", "Everett",
+        "Farmer", "Ferguson", "Fisher", "Fleming", "Flores", "Floyd", "Ford", "Foster", "Fox", "Franklin",
+        "Garcia", "Gardner", "Garrett", "George", "Gibson", "Gilbert", "Gomez", "Gonzalez", "Gordon", "Graham",
+        "Hall", "Hamilton", "Hansen", "Harris", "Harrison", "Hart", "Hawkins", "Hayes", "Henderson", "Hill",
+        "Ingram", "Irwin", "Iverson", "Isaacs", "Ireland", "Ibarra", "Inman", "Irving", "Ivers", "Ison",
+        "Jackson", "Jacobs", "James", "Jenkins", "Jennings", "Jimenez", "Johnson", "Johnston", "Jones", "Jordan",
+        "Keller", "Kelly", "Kennedy", "Kim", "King", "Knight", "Knowles", "Kramer", "Kuhn", "Kline",
+        "Lambert", "Lane", "Larson", "Lawrence", "Lee", "Lewis", "Little", "Long", "Lopez", "Lynch",
+        "Mann", "Marshall", "Martin", "Martinez", "Mason", "Matthews", "Mendoza", "Miller", "Mitchell", "Moore",
+        "Nash", "Navarro", "Neal", "Nelson", "Newman", "Nichols", "Nixon", "Noble", "Norris", "Nunez",
+        "O'Brien", "Oliver", "Olson", "Ortiz", "Osborne", "Owens", "Odom", "Oneal", "Orr", "Ortega",
+        "Palmer", "Parker", "Parsons", "Patterson", "Payne", "Perez", "Perkins", "Perry", "Phillips", "Powell",
+        "Qualls", "Quigley", "Quinlan", "Quinn", "Quintero", "Quick", "Quade", "Quarles", "Queen", "Quincy",
+        "Ramirez", "Ray", "Reed", "Reese", "Reid", "Reynolds", "Rhodes", "Rice", "Richardson", "Rivera",
+        "Salazar", "Sanchez", "Sanders", "Scott", "Shaw", "Shelton", "Simpson", "Sims", "Smith", "Stewart",
+        "Taylor", "Thomas", "Thompson", "Torres", "Townsend", "Tran", "Tucker", "Turner", "Tyler", "Terry",
+        "Underwood", "Upton", "Usher", "Utley", "Ulrich", "Umber", "Urban", "Ullman", "Upchurch", "Urbina",
+        "Valdez", "Valencia", "Vance", "Vargas", "Vasquez", "Vaughn", "Vega", "Velasquez", "Vincent", "Vinson",
+        "Wade", "Walker", "Wallace", "Walters", "Ward", "Warner", "Washington", "Watkins", "Watson", "Williams",
+        "Xander", "Xavier", "Xenos", "Xiong", "Xayasane", "Xayavong", "Xiques", "Xerri", "Ximenes", "Xu",
+        "Yancey", "Yang", "Yates", "York", "Young", "Ybarra", "Yeager", "Yoder", "Yoon", "Yu",
+        "Zamora", "Zane", "Zavala", "Zimmerman", "Zuniga", "Zapata", "Zeigler", "Zeller", "Zhou", "Zimmer"
+    ]
+    nombre = random.choice(nombres)
+    apellido1 = random.choice(apellidos)
+    apellido2 = random.choice(apellidos)
+    pNombre = [nombre, apellido1, apellido2]
+    return pNombre
+def generarFechaNac():
+    dia = random.randint(1, 31)
+    mes = random.randint(1, 12)
+    fechaHoy = datetime.now()
+    annoHoy = fechaHoy.year
+    annoMin = annoHoy - 18
+    annoMax = annoHoy - 65
+    anno = random.randint(annoMax, annoMin)
+    fechaNac = (dia, mes, anno)
+    while not validarFechaNacBD(fechaNac):
+        dia = random.randint(1, 31)
+        mes = random.randint(1, 12)
+        anno = random.randint(annoMax, annoMin)
+        fechaNac = (dia, mes, anno)
+    return fechaNac
+def generarCorreo(nombre):
+    dominios = ["costarricense.cr", "racsa.go.cr", "ccss.sa.cr", "gmail.com"]
+    nombreStr = nombre[0].lower()  # primer nombre
+    apellidoStr = nombre[1].lower()  # primer apellido
+    numero = random.randint(1, 999)
+    correo = f"{nombreStr}{apellidoStr}{numero}@{random.choice(dominios)}"
+    return correo
+def generarDatosPersona(bdPersonas):
+    datosPersona = []
+    cedula = ""
+    nombre = generarNombre()
+    datosPersona.append(nombre)
+    datosPersona.append(generarCedula(cedula, bdPersonas))
+    tSangre = (1, 2, 3, 4, 5, 6, 7, 8)
+    datosPersona.append(random.choice(tSangre))
+    datosPersona.append(random.choice([True, False]))
+    datosPersona.append(generarFechaNac())
+    datosPersona.append(round(random.uniform(50.1, 119.9), 1))
+    correo = generarCorreo(nombre)
+    datosPersona.append(correo)
+    tel = "0"
+    while tel[0] in "0135":
+        tel = f"{random.randint(1000,9999)}-{random.randint(1000,9999)}"
+    datosPersona.append(tel)
+    datosPersona.append(1)
+    datosPersona.append(random.randint(0, 7))
+    return datosPersona
+def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores):
+    contador = 0
+    cant = int(cant.get())
+    while contador < cant:
+        datosPersona = generarDatosPersona(bdDonadores)
+        cedula = datosPersona[1]
+        bdDonadores[cedula] = [datosPersona[0]] + datosPersona[2:]
+        contador += 1
+    guardarDonadores(bdDonadores)
+    ventanaGenerarDon.withdraw()
+    ventanaGenerarDon = tk.Toplevel()
+    ventanaGenerarDon.title("Sistema de Banco de Sangre")
+    ventanaGenerarDon.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+    mensGenerar = tk.Label(ventanaGenerarDon,
+                           text=f"Se han generado {cant} donadores")
+    mensGenerar.place(x=98, y=70)
+    botRegresar = tk.Button(ventanaGenerarDon,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: volverMenu(ventanaGenerarDon, ventanaMenu))
+    botRegresar.place(x=450, y=500)
+def validarCantDon(cant, mensGenerarValidacion):
+    cant = cant.widget.get()
+    if re.match(r"^\d+$", cant) and int(cant) > 0:
+        mensGenerarValidacion.config(text="Cantidad valida",
+                                    foreground="green")
+    else:
+        mensGenerarValidacion.config(
+            text="Cantidad invalida. Debe ingresar solo datos numéricos mayores a 0",
+            foreground="red")
+def ingresarCantDon(ventanaGenerarDon, mensGenerarValidacion):
+    cantDonador = tk.Entry(ventanaGenerarDon,
+                         font=("Arial", 11))
+    cantDonador.place(x=100, y=140)
+    cantDonador.bind("<KeyRelease>", lambda cant: validarCantDon(cant, mensGenerarValidacion))
+    return cantDonador
+def ingresarCantDonAux(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion):
+    ventanaGenerarDon.withdraw()
+    ventanaGenerarDon = tk.Toplevel()
+    ventanaGenerarDon.title("Sistema de Banco de Sangre")
+    ventanaGenerarDon.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+    mensGenerar = tk.Label(ventanaGenerarDon,
+                           text="Digite la cantidad de donadores que desea generar: ")
+    mensGenerar.place(x=98, y=70)
+    mensGenerarValidacion = tk.Label(ventanaGenerarDon,
+                                     text="",
+                                     font=("Arial", 10))
+    mensGenerarValidacion.place(x=265, y=90)
+    cant = ingresarCantDon(ventanaGenerarDon, mensGenerarValidacion)
+    bdDonadores = {}
+    botGenerar = tk.Button(ventanaGenerarDon,
+                                   cursor="Hand2",
+                                   text="Generar",
+                                   relief="groove",
+                                   font=("Arial", 11),
+                                   command=lambda: generarDonadores(ventanaMenu,ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores))
+    botGenerar.place(x=280, y=500)
+    botRegresar = tk.Button(ventanaGenerarDon,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: volverMenu(ventanaGenerarDon, ventanaMenu))
+    botRegresar.place(x=450, y=500)
+def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones):
+    ventanaMenu.withdraw()
+    ventanaGenerarDonAux = tk.Toplevel()
+    ventanaGenerarDonAux.title("Sistema de Banco de Sangre")
+    ventanaGenerarDonAux.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+    mensIngresarDonador = tk.Label(ventanaGenerarDonAux,
+                                      text="Generar Donadores",
+                                      font=("Arial", 12))
+    mensIngresarDonador.place(x=340, y=30)
+    mensGenerarValidacion = tk.Label(ventanaGenerarDonAux,
+                                     text="",
+                                     font=("Arial", 10))
+    mensGenerarValidacion.place(x=265, y=90)
+    if bdDonadores == {}:
+        ingresarCantDonAux(ventanaMenu, ventanaGenerarDonAux, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion)
+    else:
+        mensGenerar = tk.Label(ventanaGenerarDonAux,
+                               text="La base de datos está cargada. Desea reescribir los datos: ")
+        mensGenerar.place(x=98, y=70)
+        continuar = tk.IntVar(value=0)
+        opcGenerarDonadores = tk.Button(ventanaGenerarDonAux,
+                                        cursor="Hand2",
+                                        text="Sí",
+                                        relief="groove",
+                                        font=("Arial", 11),
+                                        command=lambda: ingresarCantDonAux(ventanaMenu, ventanaGenerarDonAux, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion))
+        opcGenerarDonadores.place(x=100, y=100)
+        opcGenerarDonadores = tk.Button(ventanaGenerarDonAux,
+                                        cursor="Hand2",
+                                        text="No",
+                                        relief="groove",
+                                        font=("Arial", 11),
+                                        command=lambda: volverMenu(ventanaGenerarDonAux, ventanaMenu))
+        opcGenerarDonadores.place(x=150, y=100)
+
+        mensGenerarValidacion = tk.Label(ventanaGenerarDonAux,
+                                         text="",
+                                         font=("Arial", 10))
+        mensGenerarValidacion.place(x=265, y=90)
+
+    botRegresar = tk.Button(ventanaGenerarDonAux,
+                                   cursor="Hand2",
+                                   text="Regresar",
+                                   relief="groove",
+                                   font=("Arial", 11),
+                                   command=lambda: volverMenu(ventanaGenerarDonAux, ventanaMenu))
+    botRegresar.place(x=450, y=500)
