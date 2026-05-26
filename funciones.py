@@ -13,6 +13,23 @@ from datetime import datetime
 from tkinter import messagebox
 
 #funciones
+def actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
+        try: 
+            with open("bdDonadores.txt", "rb") as archivo:
+                contenido = archivo.read()
+            if len(contenido.strip()) == 0:
+                opcActualizarDatosDonador.config(state = "disabled")
+                opcEliminarDonador.config(state = "disabled")
+                opcReportes.config(state = "disabled")
+            else:
+                opcActualizarDatosDonador.config(state = "normal")
+                opcEliminarDonador.config(state = "normal")
+                opcReportes.config(state = "normal")
+        except:
+            opcActualizarDatosDonador.config(state = "disabled")
+            opcEliminarDonador.config(state = "disabled")
+            opcReportes.config(state = "disabled")
+
 def dimensionarVentana(ventanaMenu):
     anchoPantalla = ventanaMenu.winfo_screenwidth()
     altoPantalla = ventanaMenu.winfo_screenheight()
@@ -54,7 +71,7 @@ def mostrarInformacionSangre(tipoSangreInt):
     infoSangreDonador = infoTipoSangre[tipoSangreInt]
     return infoSangreDonador
     
-def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu, actualizarBotones):
+def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     ventanaIngresarDon.withdraw()
     ventanaResultadoRegistarDon = tk.Toplevel()
     ventanaResultadoRegistarDon.title("Sistema de Banco de Sangre")
@@ -118,7 +135,8 @@ def registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, p
                     mensLugarDonacion.place(x=98, y=250)
 
                 bdDonadores[cedulaStr] = [nombreLista, tipoSangreInt, sexoBool, fechaNacTupla, pesoFloat, correoStr, telefonoStr, 1, 0]
-                actualizarBotones()
+                guardarDonadores(bdDonadores)
+                actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
                 print(bdDonadores)
 
             
@@ -256,7 +274,7 @@ def formatoFechaNacIngresarDon(fechaNac):
         return False
     return True
 
-def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu, actualizarBotones):
+def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     cedulaStr = cedula.get()
     nombreStr = nombre.get()
     tipoSangreStr = tipoSangre.get()
@@ -284,7 +302,7 @@ def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX
             if formatoFechaNacIngresarDon(fechaNacStr):
                 if validarTelBD(telefonoStr):
                     if validarCorreoBD(correoStr):
-                        return registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu, actualizarBotones)
+                        return registrarDonador(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedulaStr, nombreLista, fechaNacTupla, tipoSangreInt, sexoBool, pesoFloat, telefonoStr, correoStr, bdDonadores, ventanaMenu, opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
                     else:
                         messagebox.showerror("Correo Invalido", "Verifique que este escrito como se solicita.")
                         return
@@ -428,7 +446,7 @@ def ingresarCorreo(ventanaIngresarDon, mensCorreoValidacion):
     return correoDonador
 def validarCorreoBD(pCorreo):
     if isinstance(pCorreo, str):
-        patron = r"^[a-zA-Z0-9._%+-]+@(costarricense\.cr|racsa\.go\.cr|ccss\.sa\.cr|gmail+\.com)$"
+        patron = r"^[a-zA-Z0-9._%+-]+@(costarricense\.cr|racsa\.go\.cr|ccss\.sa\.cr|gmail\.com)$"
         if re.match(patron, pCorreo):
             return True
 def validarCorreoAux(correo, mensCorreoValidacion):
@@ -541,7 +559,7 @@ def limpiarEntradas(cedula, nombre, fechaNac, comboBoxTipoSangre, sexoDonador, p
 def volverMenu(ventanaActual, ventanaMenu):
     ventanaActual.destroy()
     ventanaMenu.deiconify()
-def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones):
+def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     ventanaMenu.withdraw()
     ventanaIngresarDon = tk.Toplevel()
     ventanaIngresarDon.title("Sistema de Banco de Sangre")
@@ -628,7 +646,7 @@ def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY
                                    text="Registrar",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu, actualizarBotones))
+                                   command=lambda: registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX, posicionY, cedula, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores, ventanaMenu, opcActualizarDatosDonador, opcEliminarDonador, opcReportes))
     botRegistrar.place(x=280, y=500)
     botLimpiar = tk.Button(ventanaIngresarDon,
                                    cursor="Hand2",
@@ -714,7 +732,7 @@ def generarNombre():
         "Lambert", "Lane", "Larson", "Lawrence", "Lee", "Lewis", "Little", "Long", "Lopez", "Lynch",
         "Mann", "Marshall", "Martin", "Martinez", "Mason", "Matthews", "Mendoza", "Miller", "Mitchell", "Moore",
         "Nash", "Navarro", "Neal", "Nelson", "Newman", "Nichols", "Nixon", "Noble", "Norris", "Nunez",
-        "O'Brien", "Oliver", "Olson", "Ortiz", "Osborne", "Owens", "Odom", "Oneal", "Orr", "Ortega",
+        "Oliver", "Olson", "Ortiz", "Osborne", "Owens", "Odom", "Oneal", "Orr", "Ortega",
         "Palmer", "Parker", "Parsons", "Patterson", "Payne", "Perez", "Perkins", "Perry", "Phillips", "Powell",
         "Qualls", "Quigley", "Quinlan", "Quinn", "Quintero", "Quick", "Quade", "Quarles", "Queen", "Quincy",
         "Ramirez", "Ray", "Reed", "Reese", "Reid", "Reynolds", "Rhodes", "Rice", "Richardson", "Rivera",
@@ -737,15 +755,15 @@ def generarFechaNac():
     mes = random.randint(1, 12)
     fechaHoy = datetime.now()
     annoHoy = fechaHoy.year
-    annoMin = annoHoy - 18
-    annoMax = annoHoy - 65
-    anno = random.randint(annoMax, annoMin)
-    fechaNac = (dia, mes, anno)
+    annoMin = annoHoy - 65
+    annoMax = annoHoy - 18
+    anno = random.randint(annoMin, annoMax)
+    fechaNac = (str(dia), str(mes), str(anno))
     while not validarFechaNacBD(fechaNac):
         dia = random.randint(1, 31)
         mes = random.randint(1, 12)
-        anno = random.randint(annoMax, annoMin)
-        fechaNac = (dia, mes, anno)
+        anno = random.randint(annoMin, annoMax)
+        fechaNac = (str(dia), str(mes), str(anno))
     return fechaNac
 def generarCorreo(nombre):
     dominios = ["costarricense.cr", "racsa.go.cr", "ccss.sa.cr", "gmail.com"]
@@ -774,7 +792,7 @@ def generarDatosPersona(bdPersonas):
     datosPersona.append(1)
     datosPersona.append(random.randint(0, 7))
     return datosPersona
-def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores):
+def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     contador = 0
     cant = int(cant.get())
     while contador < cant:
@@ -783,12 +801,14 @@ def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, 
         bdDonadores[cedula] = [datosPersona[0]] + datosPersona[2:]
         contador += 1
     guardarDonadores(bdDonadores)
+    actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
     ventanaGenerarDon.withdraw()
     ventanaGenerarDon = tk.Toplevel()
     ventanaGenerarDon.title("Sistema de Banco de Sangre")
     ventanaGenerarDon.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
     mensGenerar = tk.Label(ventanaGenerarDon,
-                           text=f"Se han generado {cant} donadores")
+                           text=f"Se han generado {cant} donadores",
+                           font=("Arial", 13))
     mensGenerar.place(x=98, y=70)
     botRegresar = tk.Button(ventanaGenerarDon,
                             cursor="Hand2",
@@ -796,7 +816,7 @@ def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, 
                             relief="groove",
                             font=("Arial", 11),
                             command=lambda: volverMenu(ventanaGenerarDon, ventanaMenu))
-    botRegresar.place(x=450, y=500)
+    botRegresar.place(x=360, y=500)
 def validarCantDon(cant, mensGenerarValidacion):
     cant = cant.widget.get()
     if re.match(r"^\d+$", cant) and int(cant) > 0:
@@ -812,18 +832,19 @@ def ingresarCantDon(ventanaGenerarDon, mensGenerarValidacion):
     cantDonador.place(x=100, y=140)
     cantDonador.bind("<KeyRelease>", lambda cant: validarCantDon(cant, mensGenerarValidacion))
     return cantDonador
-def ingresarCantDonAux(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion):
+def ingresarCantDonAux(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     ventanaGenerarDon.withdraw()
     ventanaGenerarDon = tk.Toplevel()
     ventanaGenerarDon.title("Sistema de Banco de Sangre")
     ventanaGenerarDon.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
     mensGenerar = tk.Label(ventanaGenerarDon,
-                           text="Digite la cantidad de donadores que desea generar: ")
-    mensGenerar.place(x=98, y=70)
+                           text="Digite la cantidad de donadores que desea generar: ",
+                           font=("Arial", 13))
+    mensGenerar.place(x=98, y=90)
     mensGenerarValidacion = tk.Label(ventanaGenerarDon,
                                      text="",
                                      font=("Arial", 10))
-    mensGenerarValidacion.place(x=265, y=90)
+    mensGenerarValidacion.place(x=265, y=138)
     cant = ingresarCantDon(ventanaGenerarDon, mensGenerarValidacion)
     bdDonadores = {}
     botGenerar = tk.Button(ventanaGenerarDon,
@@ -831,16 +852,16 @@ def ingresarCantDonAux(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana
                                    text="Generar",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: generarDonadores(ventanaMenu,ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores))
-    botGenerar.place(x=280, y=500)
+                                   command=lambda: generarDonadores(ventanaMenu,ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes))
+    botGenerar.place(x=320, y=500)
     botRegresar = tk.Button(ventanaGenerarDon,
                             cursor="Hand2",
                             text="Regresar",
                             relief="groove",
                             font=("Arial", 11),
                             command=lambda: volverMenu(ventanaGenerarDon, ventanaMenu))
-    botRegresar.place(x=450, y=500)
-def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones):
+    botRegresar.place(x=410, y=500)
+def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     ventanaMenu.withdraw()
     ventanaGenerarDonAux = tk.Toplevel()
     ventanaGenerarDonAux.title("Sistema de Banco de Sangre")
@@ -852,9 +873,9 @@ def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posic
     mensGenerarValidacion = tk.Label(ventanaGenerarDonAux,
                                      text="",
                                      font=("Arial", 10))
-    mensGenerarValidacion.place(x=265, y=90)
+    mensGenerarValidacion.place(x=265, y=138)
     if bdDonadores == {}:
-        ingresarCantDonAux(ventanaMenu, ventanaGenerarDonAux, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion)
+        ingresarCantDonAux(ventanaMenu, ventanaGenerarDonAux, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion, opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
     else:
         mensGenerar = tk.Label(ventanaGenerarDonAux,
                                text="La base de datos está cargada. Desea reescribir los datos: ")
@@ -865,7 +886,7 @@ def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posic
                                         text="Sí",
                                         relief="groove",
                                         font=("Arial", 11),
-                                        command=lambda: ingresarCantDonAux(ventanaMenu, ventanaGenerarDonAux, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion))
+                                        command=lambda: ingresarCantDonAux(ventanaMenu, ventanaGenerarDonAux, anchoVentana, altoVentana, posicionX, posicionY, mensGenerarValidacion, opcActualizarDatosDonador, opcEliminarDonador, opcReportes))
         opcGenerarDonadores.place(x=100, y=100)
         opcGenerarDonadores = tk.Button(ventanaGenerarDonAux,
                                         cursor="Hand2",

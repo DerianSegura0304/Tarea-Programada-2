@@ -7,8 +7,10 @@
 import funciones
 import tkinter as tk
 
+
 #Menu
 def menu(bdDonadores):
+
     ventanaMenu = tk.Tk()
     ventanaMenu.title("Sistema de Banco de Sangre")
 
@@ -18,12 +20,14 @@ def menu(bdDonadores):
                            font=("Arial", 12))
     mensajeMenu.place(x=170, y=50)
 
+    
+        
     opcIngresarDonante = tk.Button(ventanaMenu,
                                    cursor="Hand2",
                                    text="Ingresar Donante",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, actualizarBotones))
+                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes))
     opcIngresarDonante.place(x=100, y=100)
 
     opcGenerarDonadores = tk.Button(ventanaMenu,
@@ -31,7 +35,7 @@ def menu(bdDonadores):
                                     text="Generar Donadores",
                                     relief="groove",
                                     font=("Arial", 11),
-                                    command=lambda: funciones.generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana,posicionX, posicionY, bdDonadores,actualizarBotones))
+                                    command=lambda: funciones.generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana,posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes))
     opcGenerarDonadores.place(x=100, y=150)
 
     opcActualizarDatosDonador = tk.Button(ventanaMenu,
@@ -70,16 +74,7 @@ def menu(bdDonadores):
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
 
-    def actualizarBotones():
-        if len(bdDonadores) == 0:
-            opcActualizarDatosDonador.config(state = "disable")
-            opcEliminarDonador.config(state = "disable")
-            opcReportes.config(state = "disable")
-        else:
-            opcActualizarDatosDonador.config(state = "normal")
-            opcEliminarDonador.config(state = "normal")
-            opcReportes.config(state = "normal")
-    actualizarBotones()
+    actualizarBotones = funciones.actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
 
     ventanaMenu.mainloop()
 
