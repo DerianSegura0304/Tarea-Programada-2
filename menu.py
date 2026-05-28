@@ -16,7 +16,10 @@ def menu(bdDonadores):
 
     anchoVentana, altoVentana, posicionX, posicionY = funciones.dimensionarVentana(ventanaMenu)
 
-    diccHospi = {1:["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"],
+    hospiSJ = ["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"]
+    diccHospi = {1:hospiSJ,
+                8:hospiSJ,
+                9:hospiSJ,
                 2:["Hospital San Rafael de Alajuela","Hospital de San Ramón","Hospital del Cantón Norteño"],
                 3:["Hospital Max Peralta"],
                 4:["Hospital San Vicente de Paúl"],
