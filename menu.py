@@ -16,6 +16,14 @@ def menu(bdDonadores):
 
     anchoVentana, altoVentana, posicionX, posicionY = funciones.dimensionarVentana(ventanaMenu)
 
+    diccHospi = {1:["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"],
+                2:["Hospital San Rafael de Alajuela","Hospital de San Ramón","Hospital del Cantón Norteño"],
+                3:["Hospital Max Peralta"],
+                4:["Hospital San Vicente de Paúl"],
+                5:["Hospital La Anexión en Nicoya","Hospital Enrique Baltodano de Liberia"],
+                6:["Hospital Monseñor Sanabria"],
+                7:["Hospital Tony Facio","Hospital de Guápiles"]}
+
     mensajeMenu = tk.Label(text="Estas en el Menu Principal. Presione el Boton de la Opcion que Desea",
                            font=("Arial", 12))
     mensajeMenu.place(x=170, y=50)
@@ -27,7 +35,7 @@ def menu(bdDonadores):
                                    text="Ingresar Donante",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes))
+                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi))
     opcIngresarDonante.place(x=100, y=100)
 
     opcGenerarDonadores = tk.Button(ventanaMenu,
@@ -57,7 +65,8 @@ def menu(bdDonadores):
                                  cursor="Hand2",
                                  text="Insertar lugar de donación según provincia",
                                  relief="groove",
-                                 font=("Arial", 11))
+                                 font=("Arial", 11),
+                                 command=lambda: funciones.InsertarLugarDonacionAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, diccHospi))
     opcLugarDonacion.place(x=100, y=300)
 
     opcReportes = tk.Button(ventanaMenu,
