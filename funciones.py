@@ -588,6 +588,8 @@ def validarBD(bdDonadores):
                         temp[donador[1]] = datos
                         validos += 1
                     else:
+                        if not validarFechaNacBD(donador[4]):
+                            print(f"Donador no válido | Motivo: Edad | {donador[4]}")
                         invalidos += 1
                 else:
                     invalidos += 1
@@ -876,8 +878,12 @@ def generarDatosPersona(bdPersonas):
     while tel[0] in "0135":
         tel = f"{random.randint(1000,9999)}-{random.randint(1000,9999)}"
     datosPersona.append(tel)
-    datosPersona.append(1)
-    datosPersona.append(random.randint(0, 7))
+    estado = random.randint(0,1)
+    datosPersona.append(estado)
+    if estado == 1:
+        datosPersona.append(0)
+    else:
+        datosPersona.append(random.randint(0, 7))
     return datosPersona
 def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, posicionX, posicionY, cant, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     contador = 0
