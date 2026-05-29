@@ -16,7 +16,10 @@ def menu(bdDonadores):
 
     anchoVentana, altoVentana, posicionX, posicionY = funciones.dimensionarVentana(ventanaMenu)
 
-    diccHospi = {1:["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"],
+    hospiSJ = ["El Banco Nacional de Sangre","Hospital Mëxico","Hospital San Juan de Dios"]
+    diccHospi = {1:hospiSJ,
+                8:hospiSJ,
+                9:hospiSJ,
                 2:["Hospital San Rafael de Alajuela","Hospital de San Ramón","Hospital del Cantón Norteño"],
                 3:["Hospital Max Peralta"],
                 4:["Hospital San Vicente de Paúl"],
@@ -50,7 +53,11 @@ def menu(bdDonadores):
                                           cursor="Hand2",
                                           text="Actualizar Datos del Donador",
                                           relief="groove",
-                                          font=("Arial", 11))
+                                          font=("Arial", 11),
+                                          command=lambda: funciones.actualizarDatosAux(
+                                              ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY,
+                                              bdDonadores, opcActualizarDatosDonador,
+                                              opcEliminarDonador, opcReportes, diccHospi))
     opcActualizarDatosDonador.place(x=100, y=200)
 
     opcEliminarDonador = tk.Button(ventanaMenu,
@@ -82,8 +89,6 @@ def menu(bdDonadores):
                          relief="groove",
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
-
-    actualizarBotones = funciones.actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
 
     ventanaMenu.mainloop()
 
