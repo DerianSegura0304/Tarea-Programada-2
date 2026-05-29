@@ -12,8 +12,91 @@ from tkinter.ttk import *
 from datetime import datetime
 from tkinter import messagebox
 
+    # 1- Por una provincia
+    # 2- Por rango de edad
+    # 3- Por Tipo Sangre y una Provincia
+    # 4- Lista Completa
+    # 5- Mujeres Donantes O-
+    # 6- A quién donar (Por provincia)
+    # 7- De quien recibir (Por provincia)  |      (Juan)
+    # 8- No Activos |      (Derian)
+    # 9- Lugares de Donación |
+
+def validarRangoEdadHtmlAux(ventanaOpcionesReportes, anchoVentana, altoVentana, posicionX, posicionY):
+    ventanaOpcionesReportes.withdraw()
+    ventanaRangoPorEdad = tk.Toplevel()
+    ventanaRangoPorEdad.title("Sistema de Banco de Sangre")
+    ventanaRangoPorEdad.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+
+
+    mensEdadInicial = tk.Label(ventanaRangoPorEdad,
+                          text="Digite la edad inicial")
+    mensEdadInicial.place(x=98, y=70)
+    edadInicial = tk.Entry(ventanaRangoPorEdad,
+                             font=("Arial", 11))
+    edadInicial.place(x=100, y=92)
+
+    botRegistrar = tk.Button(ventanaRangoPorEdad,
+                             cursor="Hand2",
+                             text="Verificar Edad",
+                             relief="groove",
+                             font=("Arial", 11),
+                             command=lambda: validarRangoEdadHtml(ventanaRangoPorEdad, edadInicial, botRegistrar))
+    botRegistrar.place(x=280, y=500)
+
+    botRegresar = tk.Button(ventanaRangoPorEdad,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: volverMenu(ventanaRangoPorEdad, ventanaOpcionesReportes))
+    botRegresar.place(x=450, y=500)
+
+    
+
+def validarRangoEdadHtml(ventanaRangoPorEdad, edadInicial, botRegistrar):
+    if validarEdadHtml(edadInicial):
+        mensEdadFinal = tk.Label(ventanaRangoPorEdad,
+                          text="Digite la edad final")
+        mensEdadFinal.place(x=98, y=120)
+        edadFinal = tk.Entry(ventanaRangoPorEdad,
+                                font=("Arial", 11))
+        edadFinal.place(x=100, y=142)
+
+        botRegistrar.config(text="Generar reporte",
+                            command=lambda: mostrarCreacionReporteRangoEdad(edadInicial, edadFinal))
+    else:
+        messagebox.showerror("Edad invalida", "Debe de ser una edad igual o mayor de 18 años") 
+        return
+    
+def mostrarCreacionReporteRangoEdad(edadInicial, edadFinal):
+    edadInicialStr = edadInicial.get().strip()
+    edadFinalStr = edadFinal.get().strip()
+    if edadInicialStr == "" or edadFinalStr == "":
+        messagebox.showerror("Espacios en blanco", "No puede dejar espacios en blanco")
+        return
+    try:
+        valInicial = int(edadInicialStr)
+        valFinal = int(edadFinalStr)
+        if valFinal < valInicial:
+            messagebox.showerror("Error de rango", "La edad final no puede ser menor que la edad inicial.")
+            return
+        if valFinal >= 65:
+            messagebox.showerror("Edad inválida", "La edad final debe ser menor de 65 años.")
+            return
+        messagebox.showinfo("Exito", "Reporte creado satisfactoriamente")
+        
+    except ValueError:
+        messagebox.showerror("Error de datos", "Por favor ingrese valores numéricos válidos.")
+
+def validarEdadHtml(edad):
+    edad = int(edad.get().strip())
+    if edad >= 18 and edad < 65:
+        return True
+    return False
+
 # lugar de donacion
-def InsertarLugarDonacionAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, diccHospi):
+def insertarLugarDonacionAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, diccHospi):
     ventanaMenu.withdraw()
     ventanaLugarDonacion = tk.Toplevel()
     ventanaLugarDonacion.title("Sistema de Banco de Sangre")

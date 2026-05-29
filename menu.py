@@ -7,6 +7,96 @@
 import funciones
 import tkinter as tk
 
+def mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY):
+    ventanaMenu.withdraw()
+    ventanaOpcionesReportes = tk.Toplevel()
+    ventanaOpcionesReportes.title("Sistema de Banco de Sangre")
+    ventanaOpcionesReportes.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+
+    mensaOpcionesReporte = tk.Label(ventanaOpcionesReportes,
+                                    text="Presiona el Reporte que deseas",
+                                    font=("Arial", 12))
+    mensaOpcionesReporte.place(x=280, y=30)
+
+    opcPorProvincia = tk.Button(ventanaOpcionesReportes,
+                                   cursor="Hand2",
+                                   text="Por una provincia",
+                                   relief="groove",
+                                   font=("Arial", 11))
+                                #    command=lambda: )
+    opcPorProvincia.place(x=90, y=50)
+
+    opcPorEdad = tk.Button(ventanaOpcionesReportes,
+                                    cursor="Hand2",
+                                    text="Por rango de edad",
+                                    relief="groove",
+                                    font=("Arial", 11),
+                                    command=lambda: funciones.validarRangoEdadHtmlAux(ventanaOpcionesReportes, anchoVentana, altoVentana, posicionX, posicionY))
+    opcPorEdad.place(x=90, y=100)
+
+    opcSangreProvincia = tk.Button(ventanaOpcionesReportes,
+                                          cursor="Hand2",
+                                          text="Por Tipo Sangre y una Provincia",
+                                          relief="groove",
+                                          font=("Arial", 11))
+                                        #   command=lambda: )
+    opcSangreProvincia.place(x=90, y=150)
+
+    opcListaCompleta = tk.Button(ventanaOpcionesReportes,
+                                   cursor="Hand2",
+                                   text="Lista Completa",
+                                   relief="groove",
+                                   font=("Arial", 11))
+                                #    command=lambda: )
+    opcListaCompleta.place(x=90, y=200)
+
+    opcMujeresO = tk.Button(ventanaOpcionesReportes,
+                                 cursor="Hand2",
+                                 text="Mujeres Donantes O-",
+                                 relief="groove",
+                                 font=("Arial", 11))
+                                #  command=lambda: )
+    opcMujeresO.place(x=90, y=250)
+
+    opcQuienDonar = tk.Button(ventanaOpcionesReportes,
+                            cursor="Hand2",
+                            text="A quién donar (Por provincia)",
+                            relief="groove",
+                            font=("Arial", 11))
+                            # command=lambda: )
+    opcQuienDonar.place(x=90, y=300)
+
+    opcQuienDonar = tk.Button(ventanaOpcionesReportes,
+                            cursor="Hand2",
+                            text="De quien recibir (Por provincia)",
+                            relief="groove",
+                            font=("Arial", 11))
+                            # command=lambda: )
+    opcQuienDonar.place(x=90, y=350)
+
+    opcQuienDonar = tk.Button(ventanaOpcionesReportes,
+                            cursor="Hand2",
+                            text="No Activos",
+                            relief="groove",
+                            font=("Arial", 11))
+                            # command=lambda: )
+    opcQuienDonar.place(x=90, y=400)
+
+    opcQuienDonar = tk.Button(ventanaOpcionesReportes,
+                            cursor="Hand2",
+                            text="Lugares de Donación",
+                            relief="groove",
+                            font=("Arial", 11))
+                            # command=lambda: )
+    opcQuienDonar.place(x=90, y=450)
+
+    botRegresar = tk.Button(ventanaOpcionesReportes,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: funciones.volverMenu(ventanaOpcionesReportes, ventanaMenu))
+    botRegresar.place(x=360, y=500)
 
 #Menu
 def menu(bdDonadores):
@@ -73,14 +163,15 @@ def menu(bdDonadores):
                                  text="Insertar lugar de donación según provincia",
                                  relief="groove",
                                  font=("Arial", 11),
-                                 command=lambda: funciones.InsertarLugarDonacionAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, diccHospi))
+                                 command=lambda: funciones.insertarLugarDonacionAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, diccHospi))
     opcLugarDonacion.place(x=100, y=300)
 
     opcReportes = tk.Button(ventanaMenu,
                             cursor="Hand2",
                             text="Reportes",
                             relief="groove",
-                            font=("Arial", 11))
+                            font=("Arial", 11),
+                            command= lambda: mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY))
     opcReportes.place(x=100, y=350)
 
     opcSalir = tk.Button(ventanaMenu,
