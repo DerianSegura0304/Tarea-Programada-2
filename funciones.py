@@ -993,3 +993,186 @@ def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posic
         botRegresar.place(x=450, y=500)
     except:
         pass
+
+# actualizacion de donador
+def actualizarDatosAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores,
+                       opcActualizarDatosDonador,
+                       opcEliminarDonador, opcReportes, diccHospi):
+    ventanaMenu.withdraw()
+    ventanaBuscarCedula = tk.Toplevel()
+    ventanaBuscarCedula.title("Sistema de Banco de Sangre")
+    ventanaBuscarCedula.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+
+    mensActualizar = tk.Label(ventanaBuscarCedula,
+                              text="Actualizar Datos del Donador",
+                              font=("Arial", 12))
+    mensActualizar.place(x=290, y=30)
+    mensCedula = tk.Label(ventanaBuscarCedula,
+                          text="Digite su cedula de la siguiente manera: Ej: 1-2345-6789: ")
+    mensCedula.place(x=98, y=70)
+    mensCedulaValidacion = tk.Label(ventanaBuscarCedula,
+                                    text="",
+                                    font=("Arial", 10))
+    mensCedulaValidacion.place(x=265, y=90)
+    mensCedulaExistencia = tk.Label(ventanaBuscarCedula,
+                                    text="",
+                                    font=("Arial", 10))
+    mensCedulaExistencia.place(x=98, y=112)
+    cedula = ingresarCedula(ventanaBuscarCedula, mensCedulaValidacion)
+    botBuscar = tk.Button(ventanaBuscarCedula,
+                          cursor="Hand2",
+                          text="Buscar Cedula",
+                          relief="groove",
+                          font=("Arial", 11),
+                          command=lambda: buscarCedulaActualizar(
+                              cedula, bdDonadores, ventanaBuscarCedula,
+                              anchoVentana, altoVentana, posicionX, posicionY,
+                              ventanaMenu, opcActualizarDatosDonador,
+                              opcEliminarDonador, opcReportes, diccHospi,
+                              mensCedulaExistencia))
+    botBuscar.place(x=280, y=500)
+    botRegresar = tk.Button(ventanaBuscarCedula,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: volverMenu(ventanaBuscarCedula, ventanaMenu))
+    botRegresar.place(x=410, y=500)
+def buscarCedulaActualizar(cedula, bdDonadores, ventanaBuscarCedula, anchoVentana, altoVentana, posicionX, posicionY,
+                           ventanaMenu,
+                           opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi, mensCedulaExistencia):
+    cedulaStr = cedula.get()
+    cedulaValidada = validarExistenciaCedula(cedulaStr, bdDonadores)
+    if cedulaValidada == 2:
+        mensCedulaExistencia.config(
+            text=f"La persona con el número de cédula: {cedulaStr}\nno está registrado en la base de datos del Banco de Sangre aún.",
+            foreground="red")
+        return
+    if cedulaValidada == 2:
+        mensCedulaExistencia.config(
+            text=f"La cedula {cedulaStr} no esta registrada en la base de datos.",
+            foreground="red")
+        return
+    mensCedulaExistencia.config(text="Cedula encontrada.", foreground="green")
+    mostrarFormularioActualizar(
+        cedulaStr, bdDonadores, ventanaBuscarCedula,
+        anchoVentana, altoVentana, posicionX, posicionY,
+        ventanaMenu, opcActualizarDatosDonador,
+        opcEliminarDonador, opcReportes, diccHospi)
+def mostrarFormularioActualizar(cedulaStr, bdDonadores, ventanaBuscarCedula, anchoVentana, altoVentana, posicionX,
+                                posicionY, ventanaMenu,
+                                opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi):
+    ventanaBuscarCedula.withdraw()
+    ventanaActualizar = tk.Toplevel()
+    ventanaActualizar.title("Sistema de Banco de Sangre")
+    ventanaActualizar.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+
+    datos = bdDonadores[cedulaStr]
+    nombreActual = datos[0]
+    tSangreActual = datos[1]
+    sexoActual = datos[2]
+    fechaActual = datos[3]
+    pesoActual = datos[4]
+    correoActual = datos[5]
+    telActual = datos[6]
+
+    dicTipoSangreInv = {1: "O-", 2: "O+", 3: "A-", 4: "A+", 5: "B-", 6: "B+", 7: "AB-", 8: "AB+"}
+
+    tk.Label(ventanaActualizar, text="Actualizar Datos del Donador",
+             font=("Arial", 12)).place(x=290, y=10)
+
+    tk.Label(ventanaActualizar, text="Cédula (no modificable):").place(x=98, y=35)
+    entryCedula = tk.Entry(ventanaActualizar, font=("Arial", 11))
+    entryCedula.place(x=100, y=55)
+    entryCedula.insert(0, cedulaStr)
+    entryCedula.config(state="readonly")
+
+    tk.Label(ventanaActualizar, text="Digite su nombre completo:").place(x=98, y=80)
+    nombre = tk.Entry(ventanaActualizar, font=("Arial", 11))
+    nombre.place(x=100, y=100)
+    nombre.insert(0, " ".join(nombreActual))
+
+    tk.Label(ventanaActualizar,
+             text="Digite fecha de nacimiento de la siguiente manera: DD/MM/AAAA:").place(x=98, y=125)
+    fechaNac = tk.Entry(ventanaActualizar, font=("Arial", 11))
+    fechaNac.place(x=100, y=145)
+    fechaNac.insert(0, f"{fechaActual[0].zfill(2)}/{fechaActual[1].zfill(2)}/{fechaActual[2]}")
+
+    tk.Label(ventanaActualizar, text="Seleccione su tipo de sangre:").place(x=98, y=170)
+    comboBoxTipoSangre = Combobox(ventanaActualizar)
+    comboBoxTipoSangre['values'] = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+    comboBoxTipoSangre.place(x=100, y=190)
+    comboBoxTipoSangre.set(dicTipoSangreInv[tSangreActual])
+
+    tk.Label(ventanaActualizar, text="Seleccione su sexo:").place(x=98, y=215)
+    sexoBool = tk.StringVar(value="Masculino" if sexoActual else "Femenino")
+    tk.Radiobutton(ventanaActualizar, text="Masculino",
+                   variable=sexoBool, value="Masculino").place(x=100, y=233)
+    tk.Radiobutton(ventanaActualizar, text="Femenino",
+                   variable=sexoBool, value="Femenino").place(x=100, y=255)
+
+    tk.Label(ventanaActualizar, text="Digite su peso en KG:").place(x=98, y=278)
+    peso = tk.Entry(ventanaActualizar, font=("Arial", 11))
+    peso.place(x=100, y=298)
+    peso.insert(0, str(pesoActual))
+
+    tk.Label(ventanaActualizar,
+             text="Digite su numero de telefono de la siguiente manera: Ej: 2233-4455:").place(x=98, y=323)
+    telefono = tk.Entry(ventanaActualizar, font=("Arial", 11))
+    telefono.place(x=100, y=343)
+    telefono.insert(0, telActual)
+
+    tk.Label(ventanaActualizar, text="Digite su correo:").place(x=98, y=368)
+    correo = tk.Entry(ventanaActualizar, font=("Arial", 11))
+    correo.place(x=100, y=388)
+    correo.insert(0, correoActual)
+
+    mensResultado = tk.Label(ventanaActualizar, text="", font=("Arial", 10))
+    mensResultado.place(x=210, y=460)
+
+    tk.Button(ventanaActualizar,
+              cursor="Hand2", text="Confirmar", relief="groove", font=("Arial", 11),
+              command=lambda: confirmarActualizacion(
+                  cedulaStr, nombre, fechaNac, comboBoxTipoSangre, sexoBool,
+                  peso, telefono, correo, bdDonadores, ventanaActualizar,
+                  ventanaMenu, opcActualizarDatosDonador, opcEliminarDonador,
+                  opcReportes, mensResultado)).place(x=310, y=490)
+
+    tk.Button(ventanaActualizar,
+              cursor="Hand2", text="Regresar", relief="groove", font=("Arial", 11),
+              command=lambda: volverMenu(ventanaActualizar, ventanaMenu)).place(x=430, y=490)
+def confirmarActualizacion(cedulaStr, nombre, fechaNac, tipoSangre, sexoBool, peso, telefono, correo, bdDonadores,
+                           ventanaActualizar,
+                           ventanaMenu, opcActualizarDatosDonador, opcEliminarDonador, opcReportes, mensResultado):
+    mensResultado.config(text="")
+
+    nombreStr = nombre.get()
+    tipoSangreStr = tipoSangre.get()
+    telefonoStr = telefono.get()
+    correoStr = correo.get()
+    fechaNacStr = fechaNac.get()
+
+    dicTipoSangre = {"O-": 1, "O+": 2, "A-": 3, "A+": 4, "B-": 5, "B+": 6, "AB-": 7, "AB+": 8}
+    tipoSangreInt = dicTipoSangre.get(tipoSangreStr)
+    nombreLista = nombreStr.strip().split(" ")
+    fechaNacTupla = tuple(fechaNacStr.split("/"))
+
+    respuesta = messagebox.askokcancel("Confirmar Acción",
+                                       "¿Actualizar los datos?")
+    if respuesta:
+        estadoActual = bdDonadores[cedulaStr][7]
+        justActual = bdDonadores[cedulaStr][8]
+        if sexoBool.get() == "Masculino":
+            sexoGuardar = True
+        else:
+            sexoGuardar = False
+        bdDonadores[cedulaStr] = [
+            nombreLista, tipoSangreInt, sexoGuardar,
+            fechaNacTupla, float(peso.get()), correoStr,
+            telefonoStr, estadoActual, justActual]
+        guardarDonadores(bdDonadores)
+        actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
+        messagebox.showinfo("Datos Actualizados", "Datos actualizados correctamente.")
+        volverMenu(ventanaActualizar, ventanaMenu)
+    else:
+        mensResultado.config(text="Datos No actualizados.", foreground="red")

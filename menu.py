@@ -53,7 +53,11 @@ def menu(bdDonadores):
                                           cursor="Hand2",
                                           text="Actualizar Datos del Donador",
                                           relief="groove",
-                                          font=("Arial", 11))
+                                          font=("Arial", 11),
+                                          command=lambda: funciones.actualizarDatosAux(
+                                              ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY,
+                                              bdDonadores, opcActualizarDatosDonador,
+                                              opcEliminarDonador, opcReportes, diccHospi))
     opcActualizarDatosDonador.place(x=100, y=200)
 
     opcEliminarDonador = tk.Button(ventanaMenu,
@@ -85,8 +89,6 @@ def menu(bdDonadores):
                          relief="groove",
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
-
-    actualizarBotones = funciones.actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
 
     ventanaMenu.mainloop()
 
