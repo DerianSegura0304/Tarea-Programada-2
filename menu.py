@@ -7,7 +7,9 @@
 import funciones
 import tkinter as tk
 
-def mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY):
+tuplaTipoSangre = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+
+def mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, tuplaTipoSangre):
     ventanaMenu.withdraw()
     ventanaOpcionesReportes = tk.Toplevel()
     ventanaOpcionesReportes.title("Sistema de Banco de Sangre")
@@ -46,8 +48,8 @@ def mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, p
                                    cursor="Hand2",
                                    text="Lista Completa",
                                    relief="groove",
-                                   font=("Arial", 11))
-                                #    command=lambda: )
+                                   font=("Arial", 11),
+                                   command=lambda: funciones.crearHtmlListaCompleta())
     opcListaCompleta.place(x=90, y=200)
 
     opcMujeresO = tk.Button(ventanaOpcionesReportes,
@@ -62,8 +64,8 @@ def mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, p
                             cursor="Hand2",
                             text="A quién donar (Por provincia)",
                             relief="groove",
-                            font=("Arial", 11))
-                            # command=lambda: )
+                            font=("Arial", 11),
+                            command=lambda: funciones.mostrarQuienDonarAux(anchoVentana, altoVentana, posicionX, posicionY, tuplaTipoSangre, ventanaOpcionesReportes))
     opcQuienDonar.place(x=90, y=300)
 
     opcQuienDonar = tk.Button(ventanaOpcionesReportes,
@@ -74,13 +76,13 @@ def mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, p
                             # command=lambda: )
     opcQuienDonar.place(x=90, y=350)
 
-    opcQuienDonar = tk.Button(ventanaOpcionesReportes,
+    opcNoActivos = tk.Button(ventanaOpcionesReportes,
                             cursor="Hand2",
                             text="No Activos",
                             relief="groove",
-                            font=("Arial", 11))
-                            # command=lambda: )
-    opcQuienDonar.place(x=90, y=400)
+                            font=("Arial", 11),
+                            command=lambda: funciones.crearHtmlNoActivos())
+    opcNoActivos.place(x=90, y=400)
 
     opcQuienDonar = tk.Button(ventanaOpcionesReportes,
                             cursor="Hand2",
@@ -128,7 +130,7 @@ def menu(bdDonadores):
                                    text="Ingresar Donante",
                                    relief="groove",
                                    font=("Arial", 11),
-                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi))
+                                   command=lambda: funciones.insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores, opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi, tuplaTipoSangre))
     opcIngresarDonante.place(x=100, y=100)
 
     opcGenerarDonadores = tk.Button(ventanaMenu,
@@ -147,7 +149,7 @@ def menu(bdDonadores):
                                           command=lambda: funciones.actualizarDatosAux(
                                               ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY,
                                               bdDonadores, opcActualizarDatosDonador,
-                                              opcEliminarDonador, opcReportes, diccHospi))
+                                              opcEliminarDonador, opcReportes, tuplaTipoSangre))
     opcActualizarDatosDonador.place(x=100, y=200)
 
     opcEliminarDonador = tk.Button(ventanaMenu,
@@ -171,7 +173,7 @@ def menu(bdDonadores):
                             text="Reportes",
                             relief="groove",
                             font=("Arial", 11),
-                            command= lambda: mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY))
+                            command= lambda: mostrarOpcionesReportes(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, tuplaTipoSangre))
     opcReportes.place(x=100, y=350)
 
     opcSalir = tk.Button(ventanaMenu,
@@ -181,8 +183,9 @@ def menu(bdDonadores):
                          font=("Arial", 11))
     opcSalir.place(x=100, y=400)
 
-    ventanaMenu.mainloop()
+    funciones.actualizarBotones(opcActualizarDatosDonador, opcEliminarDonador, opcReportes)
 
+    ventanaMenu.mainloop()
 
 #Programa Principal
 bdDonadores = funciones.cargarDonadores()

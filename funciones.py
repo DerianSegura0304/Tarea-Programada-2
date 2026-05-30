@@ -14,13 +14,378 @@ from tkinter import messagebox
 
     # 1- Por una provincia
     # 2- Por rango de edad
-    # 3- Por Tipo Sangre y una Provincia
-    # 4- Lista Completa
+    # 3- Por Tipo Sangre y una ProvinciaS
+    # 4- Lista CompletaS
     # 5- Mujeres Donantes O-
     # 6- A quién donar (Por provincia)
     # 7- De quien recibir (Por provincia)  |      (Juan)
     # 8- No Activos |      (Derian)
     # 9- Lugares de Donación |
+
+#Utilidades en comun de reportes Html
+def diccSangre(tipoSangreInt):
+    dicTipoSangre = {1: "O-", 2: "O+", 3: "A-", 4: "A+", 5: "B-", 6: "B+", 7: "AB-", 8: "AB+"}
+    return dicTipoSangre[tipoSangreInt]
+
+def obtenerFecha():
+    return datetime.now().strftime("%d-%m-%Y_%H-%M-%S")
+
+def guardarReporte(nombreArchivo, contenidoHTML):
+    try:
+        with open( f"{nombreArchivo}.html", "wb") as f:
+            f.write(contenidoHTML.encode("utf-8"))
+        return True
+    except Exception:
+        return False
+
+def leerBdDonadores():
+    try:
+        with open("bdDonadores.txt", "rb") as archivo:
+            contenido = pickle.load(archivo)
+            return validarBD(contenido)
+    except:
+        messagebox.showerror("Reporte no creado", "No se ha encontrado la base de datos.")
+        return
+
+def estiloBase():
+    return """body {background-color: antiquewhite;display: flex;justify-content: center;align-items: center;text-align: center;flex-direction: column;min-height: 100px;margin: 0;}
+    th, td {border: 1px solid #ccc;padding: 8px 16px;}
+    tr:nth-child(odd) {background-color: #ffffff;}
+    tr:nth-child(even) {background-color: #f2f2f2;}
+    table {border-collapse: collapse; margin-top: 1rem;}
+    """
+
+#Reporte html por rango de edades
+def crearFilasRangoEdad(donantes):
+    filas = ""
+    for cedula, nombre, fechaNac, telefono, correo in donantes:
+        filas += f"""
+            <tr>
+                <td>{cedula}</td>
+                <td>{nombre}</td>
+                <td>{fechaNac}</td>
+                <td>{telefono}</td>
+                <td>{correo}</td>
+            </tr>"""
+    return filas
+
+def crearHtmlRangoEdad(edadInicial, edadFinal):
+    contenidoHtmlRangoEdad = ""
+    fecha = obtenerFecha()
+    datosDonantes = leerBdDonadores()
+    donantesFiltrados = []
+    hoy = datetime.now()
+    for cedula, datos in datosDonantes.items():
+        if datos[7] == 0:
+            continue
+        nombreLista = datos[0]
+        nombreCompleto = " ".join(nombreLista).title()
+        fechaNacTupla = datos[3]
+        correo = datos[5]
+        telefono = datos[6]
+        try:
+            dia = int(fechaNacTupla[0])
+            mes = int(fechaNacTupla[1])
+            anno = int(fechaNacTupla[2])
+            edad = hoy.year - anno - ((hoy.month, hoy.day) < (mes, dia))
+            if edadInicial <= edad <= edadFinal:
+                fechaNacStr = f"{dia}/{mes}/{anno}"
+                donantesFiltrados.append((cedula, nombreCompleto, fechaNacStr, telefono, correo))
+        except Exception:
+            continue
+    if not donantesFiltrados:
+        return False
+    filas = crearFilasRangoEdad(donantesFiltrados)
+    infoEdad = f"Edad inicial: {edadInicial}"
+    if edadFinal is not None:
+        infoEdad += f"| Edad final: {edadFinal}"
+    contenidoHtmlRangoEdad += f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Reporte por Rango de Edad</title>
+    <style>{estiloBase()}</style>
+    </head>
+    <body>
+        <h1>Donantes por Rango de Edad</h1>
+        <h2>{fecha}</h2>
+        <p>{infoEdad}</p>
+        <table>
+        <tr><th colspan="5">Donantes por Rango de Edad</th></tr>
+        <tr>
+            <th>Cédula (ID)</th>
+            <th>Nombre Completo</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+        </tr>
+        {filas}
+        </table>
+        <p>Total de registros: {len(donantesFiltrados)}</p>
+    </body>
+    </html>"""
+    nombreArchivo = f"Reporte_Rango_Edad_{fecha}"
+    guardarReporte(nombreArchivo, contenidoHtmlRangoEdad)
+
+#lista Completa de Donantes
+def crearFilasListaCompleta(donantes):
+    contadorFiltrados = 0
+    filas = ""
+    for cedula, datos in sorted(donantes.items()):
+        if datos[7] == 1:
+            nombreLista = datos[0]
+            nombreCompleto = " ".join(nombreLista).title()
+            tipoSangreInt = datos[1]
+            sexoBool = datos[2]
+            fechaNacTupla = datos[3]
+            pesoFloat = datos[4]
+            correo = datos[5]
+            telefono = datos[6]
+            tipoSangreStr = diccSangre(tipoSangreInt)
+            if sexoBool:
+                sexoStr = "Masculino"
+            else:
+                sexoStr = "Femenino"
+            fechaNacStr = f"{fechaNacTupla[0]}/{fechaNacTupla[1]}/{fechaNacTupla[2]}"
+            contadorFiltrados +=1 
+            filas += f"""
+                <tr>
+                    <td>{cedula}</td>
+                    <td>{nombreCompleto}</td>
+                    <td>{tipoSangreStr}</td>
+                    <td>{fechaNacStr}</td>
+                    <td>{pesoFloat}</td>
+                    <td>{sexoStr}</td>
+                    <td>{telefono}</td>
+                    <td>{correo}</td>
+                </tr>"""
+    return filas, contadorFiltrados
+
+def crearHtmlListaCompleta():
+    fecha = obtenerFecha()
+    datosDonantes = leerBdDonadores()
+    filas, contadorFiltrados = crearFilasListaCompleta(datosDonantes)
+    contenidoHtmlListaCompleta = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <title>Reporte de Lista Completa de Donadores</title>
+    <style>{estiloBase()}</style>
+    </head>
+    <body>
+        <h1>Lista Completa de Donantes</h1>
+        <h2>{fecha}</h2>
+        <table>
+        <tr><th colspan="8">Lista Completa de Donantes</th></tr>
+        <tr>
+            <th>Cédula (ID)</th>
+            <th>Nombre Completo</th>
+            <th>Tipo de Sangre</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Peso</th>
+            <th>Sexo</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+        </tr>
+        {filas}
+        </table>
+        <p>Total de registros: {contadorFiltrados}</p>
+    </body>
+    </html>"""
+    nombreArchivo = f"Reporte_Lista_Completa_{fecha}"
+    guardarReporte(nombreArchivo, contenidoHtmlListaCompleta)
+    messagebox.showinfo("Exito", "Reporte creado satisfactoriamente")
+
+
+#A quien puedo donar?
+def obtenerSangresQuienDonar(tipoSangreStr):
+    compatibilidad = {"O-": ["O-", "O+", "A-", "A+", "B-", "B+", "AB-", "AB+"],
+                    "O+": ["O+", "A+", "B+", "AB+"],
+                    "A-": ["A-", "A+", "AB-", "AB+"],
+                    "A+": ["A+", "AB+"],
+                    "B-": ["B-", "B+", "AB-", "AB+"],
+                    "B+": ["B+", "AB+"],
+                    "AB-": ["AB-", "AB+"],
+                    "AB+": ["AB+"]}
+    return compatibilidad.get(tipoSangreStr)
+
+
+def mostrarQuienDonarAux(anchoVentana, altoVentana, posicionX, posicionY, tuplaTipoSangre, ventanaOpcionesReportes):
+    ventanaOpcionesReportes.withdraw()
+    ventanaQuienDonar = tk.Toplevel()
+    ventanaQuienDonar.title("Sistema de Banco de Sangre")
+    ventanaQuienDonar.geometry(f"{anchoVentana}x{altoVentana}+{posicionX}+{posicionY}")
+
+
+    mensTipoSangre = tk.Label(ventanaQuienDonar,
+                              text="Seleccione su tipo de sangre:")
+    mensTipoSangre.place(x=98, y=70)
+    comboBoxTipoSangre = Combobox(ventanaQuienDonar)
+    comboBoxTipoSangre['values'] = tuplaTipoSangre
+    comboBoxTipoSangre.place(x=98, y=94)
+
+    botRegistrar = tk.Button(ventanaQuienDonar,
+                             cursor="Hand2",
+                             text="Generar Reporte",
+                             relief="groove",
+                             font=("Arial", 11),
+                             command=lambda: crearHtmlQuienDonar(comboBoxTipoSangre))
+    botRegistrar.place(x=280, y=500)
+
+    botRegresar = tk.Button(ventanaQuienDonar,
+                            cursor="Hand2",
+                            text="Regresar",
+                            relief="groove",
+                            font=("Arial", 11),
+                            command=lambda: volverMenu(ventanaQuienDonar, ventanaOpcionesReportes))
+    botRegresar.place(x=450, y=500)
+
+
+def crearFilasQuienDonar(donantes, tipoSangreBuscado):
+    contadorFiltrados = 0
+    filas = ""
+    tipoSangreCompatibles = obtenerSangresQuienDonar(tipoSangreBuscado)
+    for cedula, datos in sorted(donantes.items()):
+        if datos[7] == 1:
+            tipoSangreInt = datos[1]
+            tipoSangreStr = diccSangre(tipoSangreInt)
+            if tipoSangreStr in tipoSangreCompatibles:
+                nombreLista = datos[0]
+                nombreCompleto = " ".join(nombreLista).title()
+                correo = datos[5]
+                telefono = datos[6]
+                contadorFiltrados += 1
+                filas += f"""
+                    <tr>
+                        <td>{cedula}</td>
+                        <td>{nombreCompleto}</td>
+                        <td>{tipoSangreStr}</td>
+                        <td>{telefono}</td>
+                        <td>{correo}</td>
+                    </tr>"""
+    return filas, contadorFiltrados
+
+def crearHtmlQuienDonar(comboBoxTipoSangre):
+    contenidoHtmlQuienDonar = ""
+    tipoSangre = comboBoxTipoSangre.get()
+    fecha = obtenerFecha()
+    donantes = leerBdDonadores()
+    if donantes:
+        messagebox.showinfo("Exito", "Reporte creado satisfactoriamente")
+    filas, contadorFiltrados = crearFilasQuienDonar(donantes, tipoSangre)
+    contenidoHtmlQuienDonar += f"""<!DOCTYPE html>
+    <html>
+    <head>
+    <title>A Quien Puedo Donar?</title>
+    <style>{estiloBase()}</style>
+    </head>
+    <body>
+        <h1>¿A Quién Puede Donar?</h1>
+        <h2>{fecha}</h2>
+        <p>Tipo de sangre: {tipoSangre}</p>
+        <table>
+        <tr><th colspan="5">¿A Quién Puede Donar?</th></tr>
+        <tr>
+            <th>Cédula (ID)</th>
+            <th>Nombre Completo</th>
+            <th>Tipo de Sangre</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+        </tr>
+        {filas}
+        </table>
+        <p>Total de registros: {contadorFiltrados}</p>
+    </body>
+    </html>"""
+    nombreArchivo = f"Reporte_A_Quien_Puedo_Donar_{fecha}"
+    guardarReporte(nombreArchivo, contenidoHtmlQuienDonar)
+
+
+
+#Reporte Donantes No Activos
+
+def pasarNumAJustificacion(justificacionInt):
+    dicJustificaciones = {1: "Presión arterial fuera de rango",
+                        2: "Nivel de hemoglobina bajo",
+                        3: "Tatuaje o perforación reciente",
+                        4: "Uso de medicamentos contraindicados",
+                        5: "Cirugía reciente",
+                        6: "Viaje reciente a zona endémica"}
+    return dicJustificaciones.get(justificacionInt)
+
+def crearFilasNoActivos(donantes):
+    contadorFiltrados = 0
+    filas = ""
+    for cedula, datos in sorted(donantes.items()):
+        if datos[7] == 0:
+            justificacionInt = datos[8]
+            justificacionStr = pasarNumAJustificacion(justificacionInt)
+            nombreLista = datos[0]
+            nombreCompleto = " ".join(nombreLista).title()
+            tipoSangreInt = datos[1]
+            tipoSangreStr = diccSangre(tipoSangreInt)
+            fechaNacTupla = datos[3] 
+            pesoFloat = datos[4]      
+            sexoBool = datos[2]      
+            correo = datos[5]
+            telefono = datos[6]
+            if sexoBool:
+                sexoStr = "Masculino"
+            else:
+                sexoStr = "Femenino"
+            fechaNacStr = f"{fechaNacTupla[0]}/{fechaNacTupla[1]}/{fechaNacTupla[2]}"
+            contadorFiltrados += 1
+            filas += f"""
+                <tr>
+                    <td>{justificacionStr}</td>
+                    <td>{cedula}</td>
+                    <td>{nombreCompleto}</td>
+                    <td>{tipoSangreStr}</td>
+                    <td>{fechaNacStr}</td>
+                    <td>{pesoFloat}</td>
+                    <td>{sexoStr}</td>
+                    <td>{telefono}</td>
+                    <td>{correo}</td>
+                </tr>"""
+    return filas, contadorFiltrados
+
+def crearHtmlNoActivos():
+    fecha = obtenerFecha()
+    donantes = leerBdDonadores()    
+    filas, contadorFiltrados = crearFilasNoActivos(donantes)
+    if contadorFiltrados == 0:
+        messagebox.showerror("Reporte no creado", "No hay Donantes No Activos.")
+    else:
+        messagebox.showinfo("Exito", "Reporte creado satisfactoriamente")
+        contenidoHtmlNoActivos = f"""<!DOCTYPE html>
+        <html>
+        <head>
+        <title>Donantes no Activos</title>
+        <style>{estiloBase()}</style>
+        </head>
+        <body>
+            <h1>Donantes No Activos</h1>
+            <h2>{fecha}</h2>
+            <table>
+            <tr><th colspan="9">Donantes No Activos</th></tr>
+            <tr>
+                <th>Justificación</th>
+                <th>Cédula (ID)</th>
+                <th>Nombre Completo</th>
+                <th>Tipo de Sangre</th>
+                <th>Fecha de Nacimiento</th>
+                <th>Peso</th>
+                <th>Sexo</th>
+                <th>Teléfono</th>
+                <th>Correo</th>
+            </tr>
+            {filas}
+            </table>
+            <p>Total de registros: {contadorFiltrados}</p>
+        </body>
+        </html>"""
+        nombreArchivo = f"Reporte_Donantes_No_Activos_{fecha}"
+        guardarReporte(nombreArchivo, contenidoHtmlNoActivos)
 
 def validarRangoEdadHtmlAux(ventanaOpcionesReportes, anchoVentana, altoVentana, posicionX, posicionY):
     ventanaOpcionesReportes.withdraw()
@@ -75,20 +440,21 @@ def mostrarCreacionReporteRangoEdad(edadInicial, edadFinal):
     if edadInicialStr == "" or edadFinalStr == "":
         messagebox.showerror("Espacios en blanco", "No puede dejar espacios en blanco")
         return
-    try:
-        valInicial = int(edadInicialStr)
-        valFinal = int(edadFinalStr)
-        if valFinal < valInicial:
-            messagebox.showerror("Error de rango", "La edad final no puede ser menor que la edad inicial.")
-            return
-        if valFinal >= 65:
-            messagebox.showerror("Edad inválida", "La edad final debe ser menor de 65 años.")
-            return
+    
+    edadInicialInt = int(edadInicialStr)
+    edadFinalInt = int(edadFinalStr)
+    if edadFinalInt < edadInicialInt:
+        messagebox.showerror("Reporte no creado", "La edad final no puede ser menor que la edad inicial.")
+        return
+    if edadFinalInt >= 65:
+        messagebox.showerror("Reporte no creado", "La edad final debe ser menor de 65 años.")
+        return
+    if crearHtmlRangoEdad(edadInicialInt, edadFinalInt) == False:
+        messagebox.showerror("Reporte no creado", "No se ha encontrado donadores con ese rango de edad.")
+        return
+    else:
         messagebox.showinfo("Exito", "Reporte creado satisfactoriamente")
         
-    except ValueError:
-        messagebox.showerror("Error de datos", "Por favor ingrese valores numéricos válidos.")
-
 def validarEdadHtml(edad):
     edad = int(edad.get().strip())
     if edad >= 18 and edad < 65:
@@ -382,7 +748,7 @@ def registrarDonadorAux(ventanaIngresarDon, anchoVentana, altoVentana, posicionX
         return
 def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores,
                     opcActualizarDatosDonador,
-                    opcEliminarDonador, opcReportes, diccHospi):
+                    opcEliminarDonador, opcReportes, diccHospi, tuplaTipoSangre):
     ventanaMenu.withdraw()
     ventanaIngresarDon = tk.Toplevel()
     ventanaIngresarDon.title("Sistema de Banco de Sangre")
@@ -416,7 +782,7 @@ def insertarDonador(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY
                               text="Seleccione su tipo de sangre:")
     mensTipoSangre.place(x=98, y=218)
     comboBoxTipoSangre = Combobox(ventanaIngresarDon)
-    comboBoxTipoSangre['values'] = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+    comboBoxTipoSangre['values'] = tuplaTipoSangre
     comboBoxTipoSangre.place(x=98, y=238)
     mensSexo = tk.Label(ventanaIngresarDon,
                         text="Seleccione su sexo:")
@@ -588,6 +954,7 @@ def confirmarEliminacion(cedulaStr, comboBoxJustificacion, bdDonadores, ventanaE
         numJustificacion = definirJustificacion(justificacionSeleccionada)
         bdDonadores = asignarJustificacion(cedulaStr, bdDonadores, numJustificacion)
         print(bdDonadores)
+        guardarDonadores(bdDonadores)
         return bdDonadores
     else:
         mensCedula = tk.Label(ventanaEliminarDonador,
@@ -612,6 +979,7 @@ def eliminarDonador(cedulaStr, bdDonadores):
     datos = bdDonadores[cedulaStr]
     datos[-2] = 0
     bdDonadores[cedulaStr] = datos
+    
     return bdDonadores
 
 # validaciones para datos cargados
@@ -981,6 +1349,7 @@ def generarDonadores(ventanaMenu, ventanaGenerarDon, anchoVentana, altoVentana, 
                      opcActualizarDatosDonador, opcEliminarDonador, opcReportes):
     contador = 0
     cant = int(cant.get())
+    bdDonadores.clear()
     while contador < cant:
         datosPersona = generarDatosPersona(bdDonadores)
         cedula = datosPersona[1]
@@ -1080,7 +1449,7 @@ def generarDonadoresAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posic
 # actualizacion de donador
 def actualizarDatosAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posicionY, bdDonadores,
                        opcActualizarDatosDonador,
-                       opcEliminarDonador, opcReportes, diccHospi):
+                       opcEliminarDonador, opcReportes, tuplaTipoSangre):
     ventanaMenu.withdraw()
     ventanaBuscarCedula = tk.Toplevel()
     ventanaBuscarCedula.title("Sistema de Banco de Sangre")
@@ -1111,8 +1480,7 @@ def actualizarDatosAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posici
                               cedula, bdDonadores, ventanaBuscarCedula,
                               anchoVentana, altoVentana, posicionX, posicionY,
                               ventanaMenu, opcActualizarDatosDonador,
-                              opcEliminarDonador, opcReportes, diccHospi,
-                              mensCedulaExistencia))
+                              opcEliminarDonador, opcReportes, mensCedulaExistencia, tuplaTipoSangre))
     botBuscar.place(x=280, y=500)
     botRegresar = tk.Button(ventanaBuscarCedula,
                             cursor="Hand2",
@@ -1123,7 +1491,7 @@ def actualizarDatosAux(ventanaMenu, anchoVentana, altoVentana, posicionX, posici
     botRegresar.place(x=410, y=500)
 def buscarCedulaActualizar(cedula, bdDonadores, ventanaBuscarCedula, anchoVentana, altoVentana, posicionX, posicionY,
                            ventanaMenu,
-                           opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi, mensCedulaExistencia):
+                           opcActualizarDatosDonador, opcEliminarDonador, opcReportes, mensCedulaExistencia, tuplaTipoSangre):
     cedulaStr = cedula.get()
     cedulaValidada = validarExistenciaCedula(cedulaStr, bdDonadores)
     if cedulaValidada == 2:
@@ -1141,10 +1509,10 @@ def buscarCedulaActualizar(cedula, bdDonadores, ventanaBuscarCedula, anchoVentan
         cedulaStr, bdDonadores, ventanaBuscarCedula,
         anchoVentana, altoVentana, posicionX, posicionY,
         ventanaMenu, opcActualizarDatosDonador,
-        opcEliminarDonador, opcReportes, diccHospi)
+        opcEliminarDonador, opcReportes, tuplaTipoSangre)
 def mostrarFormularioActualizar(cedulaStr, bdDonadores, ventanaBuscarCedula, anchoVentana, altoVentana, posicionX,
                                 posicionY, ventanaMenu,
-                                opcActualizarDatosDonador, opcEliminarDonador, opcReportes, diccHospi):
+                                opcActualizarDatosDonador, opcEliminarDonador, opcReportes, tuplaTipoSangre):
     ventanaBuscarCedula.withdraw()
     ventanaActualizar = tk.Toplevel()
     ventanaActualizar.title("Sistema de Banco de Sangre")
@@ -1159,7 +1527,7 @@ def mostrarFormularioActualizar(cedulaStr, bdDonadores, ventanaBuscarCedula, anc
     correoActual = datos[5]
     telActual = datos[6]
 
-    dicTipoSangreInv = {1: "O-", 2: "O+", 3: "A-", 4: "A+", 5: "B-", 6: "B+", 7: "AB-", 8: "AB+"}
+    dicTipoSangreInt= {1: "O-", 2: "O+", 3: "A-", 4: "A+", 5: "B-", 6: "B+", 7: "AB-", 8: "AB+"}
 
     tk.Label(ventanaActualizar, text="Actualizar Datos del Donador",
              font=("Arial", 12)).place(x=290, y=10)
@@ -1183,9 +1551,9 @@ def mostrarFormularioActualizar(cedulaStr, bdDonadores, ventanaBuscarCedula, anc
 
     tk.Label(ventanaActualizar, text="Seleccione su tipo de sangre:").place(x=98, y=170)
     comboBoxTipoSangre = Combobox(ventanaActualizar)
-    comboBoxTipoSangre['values'] = ("O+", "O-", "A+", "A-", "B+", "B-", "AB+", "AB-")
+    comboBoxTipoSangre['values'] = tuplaTipoSangre
     comboBoxTipoSangre.place(x=100, y=190)
-    comboBoxTipoSangre.set(dicTipoSangreInv[tSangreActual])
+    comboBoxTipoSangre.set(dicTipoSangreInt[tSangreActual])
 
     tk.Label(ventanaActualizar, text="Seleccione su sexo:").place(x=98, y=215)
     sexoBool = tk.StringVar(value="Masculino" if sexoActual else "Femenino")
